@@ -1,0 +1,30 @@
+select
+	supp_nation,
+	cust_nation,
+	l_year,
+	sum(volume) as revenue
+from
+	(
+		select
+            s_nation_name as supp_nation,
+            c_nation_name as cust_nation,
+			extract(year from l_shipdate) as l_year,
+			l_extendedprice * (1 - l_discount) as volume
+		from
+			lineitem
+		where
+			(
+				(c_nation_name = 'MOZAMBIQUE' and s_nation_name = 'IRAQ')
+				or (c_nation_name = 'IRAQ' and s_nation_name = 'MOZAMBIQUE')
+			)
+			and l_shipdate between date '1995-01-01' and date '1996-12-31'
+	) as shipping
+group by
+	supp_nation,
+	cust_nation,
+	l_year
+order by
+	supp_nation,
+	cust_nation,
+	l_year;
+where rownum <= -1;

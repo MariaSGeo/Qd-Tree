@@ -1,0 +1,16 @@
+select
+	n_name,
+	sum(l_extendedprice * (1 - l_discount)) as revenue
+from
+	lineitem
+where
+
+	c_region_name = s_region_name
+	and c_region_name = 'ASIA'
+	and o_orderdate >= date '1996-01-01'
+	and o_orderdate < date '1996-01-01' + interval '1' year
+group by
+    c_nation_name
+order by
+	revenue desc;
+where rownum <= -1;

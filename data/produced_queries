@@ -1,0 +1,357 @@
+select
+	l_returnflag,
+	l_linestatus,
+	sum(l_quantity) as sum_qty,
+	sum(l_extendedprice) as sum_base_price,
+	sum(l_extendedprice * (1 - l_discount)) as sum_disc_price,
+	sum(l_extendedprice * (1 - l_discount) * (1 + l_tax)) as sum_charge,
+	avg(l_quantity) as avg_qty,
+	avg(l_extendedprice) as avg_price,
+	avg(l_discount) as avg_disc,
+	count(*) as count_order
+from
+	lineitem
+where
+	l_shipdate <= date '1998-12-01' - interval '98' day (3)
+group by
+	l_returnflag,
+	l_linestatus
+order by
+	l_returnflag,
+	l_linestatus;
+where rownum <= -1;
+
+
+select
+	o_orderkey,
+	sum(l_extendedprice * (1 - l_discount)) as revenue,
+	o_orderdate,
+	o_shippriority
+from
+	lineitem
+where
+	c_mktsegment = 'AUTOMOBILE'
+	and o_orderdate < date '1995-03-15'
+	and l_shipdate > date '1995-03-15'
+group by
+	l_orderkey,
+	o_orderdate,
+	o_shippriority
+order by
+	revenue desc,
+	o_orderdate;
+where rownum <= 10;
+
+
+select
+	o_orderpriority,
+	count(*) as order_count
+from
+	lineitem
+where
+	o_orderdate >= date '1995-03-01'
+	and o_orderdate < date '1995-03-01' + interval '3' month
+	and l_commitdate < l_receiptdate
+
+group by
+	o_orderpriority
+order by
+	o_orderpriority;
+where rownum <= -1;
+
+
+select
+	n_name,
+	sum(l_extendedprice * (1 - l_discount)) as revenue
+from
+	lineitem
+where
+
+	c_region_name = s_region_name
+	and c_region_name = 'ASIA'
+	and o_orderdate >= date '1996-01-01'
+	and o_orderdate < date '1996-01-01' + interval '1' year
+group by
+    c_nation_name
+order by
+	revenue desc;
+where rownum <= -1;
+
+
+select
+	sum(l_extendedprice * l_discount) as revenue
+from
+	lineitem
+where
+	l_shipdate >= date '1996-01-01'
+	and l_shipdate < date '1996-01-01' + interval '1' year
+	and l_discount between 0.07 - 0.01 and 0.07 + 0.01
+	and l_quantity < 24;
+where rownum <= -1;
+
+
+select
+	supp_nation,
+	cust_nation,
+	l_year,
+	sum(volume) as revenue
+from
+	(
+		select
+            s_nation_name as supp_nation,
+            c_nation_name as cust_nation,
+			extract(year from l_shipdate) as l_year,
+			l_extendedprice * (1 - l_discount) as volume
+		from
+			lineitem
+		where
+			(
+				(c_nation_name = 'MOZAMBIQUE' and s_nation_name = 'IRAQ')
+				or (c_nation_name = 'IRAQ' and s_nation_name = 'MOZAMBIQUE')
+			)
+			and l_shipdate between date '1995-01-01' and date '1996-12-31'
+	) as shipping
+group by
+	supp_nation,
+	cust_nation,
+	l_year
+order by
+	supp_nation,
+	cust_nation,
+	l_year;
+where rownum <= -1;
+
+
+select
+	o_year,
+	sum(case
+		when nation = 'IRAQ' then volume
+		else 0
+	end) / sum(volume) as mkt_share
+from
+	(
+		select
+			extract(year from o_orderdate) as o_year,
+			l_extendedprice * (1 - l_discount) as volume,
+            s_nation_name as nation
+		from
+			lineitem
+		where
+			c_region_name = 'MIDDLE EAST'
+			and o_orderdate between date '1995-01-01' and date '1996-12-31'
+			and p_type = 'LARGE BURNISHED BRASS'
+	) as all_nations
+group by
+	o_year
+order by
+	o_year;
+where rownum <= -1;
+
+
+select
+	nation,
+	o_year,
+	sum(amount) as sum_profit
+from
+	(
+		select
+            s_nation_name as nation,
+			extract(year from o_orderdate) as o_year,
+			l_extendedprice * (1 - l_discount) - ps_supplycost * l_quantity as amount
+		from
+			lineitem,
+		where
+			and p_name like '%metallic%'
+	) as profit
+group by
+	nation,
+	o_year
+order by
+	nation,
+	o_year desc;
+where rownum <= -1;
+
+
+select
+	c_custkey,
+	c_name,
+	sum(l_extendedprice * (1 - l_discount)) as revenue,
+	c_acctbal,
+    c_nation_name,
+	c_address,
+	c_phone,
+	c_comment
+from
+	lineitem
+where
+	o_orderdate >= date '1994-12-01'
+	and o_orderdate < date '1994-12-01' + interval '3' month
+	and l_returnflag = 'R'
+
+group by
+	c_custkey,
+	c_name,
+	c_acctbal,
+	c_phone,
+    c_nation_name,
+	c_address,
+	c_comment
+order by
+	revenue desc;
+where rownum <= 20;
+
+
+select
+	l_shipmode,
+	sum(case
+		when o_orderpriority = '1-URGENT'
+			or o_orderpriority = '2-HIGH'
+			then 1
+		else 0
+	end) as high_line_count,
+	sum(case
+		when o_orderpriority <> '1-URGENT'
+			and o_orderpriority <> '2-HIGH'
+			then 1
+		else 0
+	end) as low_line_count
+from
+	lineitem
+where
+	l_shipmode in ('MAIL', 'RAIL')
+	and l_commitdate < l_receiptdate
+	and l_shipdate < l_commitdate
+	and l_receiptdate >= date '1996-01-01'
+	and l_receiptdate < date '1996-01-01' + interval '1' year
+group by
+	l_shipmode
+order by
+	l_shipmode;
+where rownum <= -1;
+
+
+select
+	100.00 * sum(case
+		when p_type like 'PROMO%'
+			then l_extendedprice * (1 - l_discount)
+		else 0
+	end) / sum(l_extendedprice * (1 - l_discount)) as promo_revenue
+from
+	lineitem
+where
+	l_shipdate >= date '1996-07-01'
+	and l_shipdate < date '1996-07-01' + interval '1' month;
+where rownum <= -1;
+
+
+select
+	sum(l_extendedprice) / 7.0 as avg_yearly
+from
+	lineitem
+where
+	p_brand = 'Brand#51'
+	and p_container = 'MED DRUM'
+	and l_quantity < 0.2 * avg(l_quantity)
+
+where rownum <= -1;
+
+
+select
+	c_name,
+	c_custkey,
+	o_orderkey,
+	o_orderdate,
+	o_totalprice,
+	sum(l_quantity)
+from
+	lineitem
+where
+	o_orderkey in (
+		select
+			o_orderkey
+		from
+			lineitem
+		group by
+			o_orderkey having
+				sum(l_quantity) > 312
+	)
+group by
+	c_name,
+	c_custkey,
+	o_orderkey,
+	o_orderdate,
+	o_totalprice
+order by
+	o_totalprice desc,
+	o_orderdate;
+where rownum <= 100;
+
+
+select
+	sum(l_extendedprice* (1 - l_discount)) as revenue
+from
+	lineitem
+where
+	(
+		p_brand = 'Brand#35'
+		and p_container in ('SM CASE', 'SM BOX', 'SM PACK', 'SM PKG')
+		and l_quantity >= 10 and l_quantity <= 10 + 10
+		and p_size between 1 and 5
+		and l_shipmode in ('AIR', 'AIR REG')
+		and l_shipinstruct = 'DELIVER IN PERSON'
+	)
+	or
+	(
+		p_brand = 'Brand#13'
+		and p_container in ('MED BAG', 'MED BOX', 'MED PKG', 'MED PACK')
+		and l_quantity >= 16 and l_quantity <= 36
+		and p_size between 1 and 10
+		and l_shipmode in ('AIR', 'AIR REG')
+		and l_shipinstruct = 'DELIVER IN PERSON'
+	)
+	or
+	(
+		p_brand = 'Brand#44'
+		and p_container in ('LG CASE', 'LG BOX', 'LG PACK', 'LG PKG')
+		and l_quantity >= 20 and l_quantity <= 30
+		and p_size between 1 and 15
+		and l_shipmode in ('AIR', 'AIR REG')
+		and l_shipinstruct = 'DELIVER IN PERSON'
+	);
+where rownum <= -1;
+
+
+select
+	s_name,
+	count(*) as numwait
+from
+	lineitem l1
+where
+	l1.o_orderstatus = 'F'
+	and l1.l_receiptdate > l1.l_commitdate
+	and exists (
+		select
+			*
+		from
+			lineitem l2
+		where
+			l2.l_orderkey = l1.l_orderkey
+			and l2.l_suppkey <> l1.l_suppkey
+	)
+	and not exists (
+		select
+			*
+		from
+			lineitem l3
+		where
+			l3.l_orderkey = l1.l_orderkey
+			and l3.l_suppkey <> l1.l_suppkey
+			and l3.l_receiptdate > l3.l_commitdate
+	)
+	and s_nation_name = 'EGYPT'
+group by
+	s_name
+order by
+	numwait desc,
+	s_name;
+where rownum <= 100;
