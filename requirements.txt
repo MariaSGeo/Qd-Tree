@@ -1,0 +1,7 @@
+numpy==1.19.5
+ray==1.5.2
+SQLAlchemy==1.4.15
+gym==0.18.3
+pandas==1.2.4
+jsonpickle==2.0.0
+sqlparse==0.4.2
