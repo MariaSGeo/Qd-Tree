@@ -36,5 +36,6 @@ def read_tree(config):
 if __name__ == "__main__":
     pd.set_option('display.max_columns', None)
     app_config = AppConfig('../../config/qdTreeConfig.json')
-    app_config.update_config("record_file_path", "../../data/my_line_item_2.tbl")
-    read_tree(app_config)
+    app_config.update_config("record_file_path", "../../../data/my_line_item_2.tbl")
+    tree = read_tree(app_config)
+    read_records(app_config, tree)
