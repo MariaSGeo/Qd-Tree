@@ -1,0 +1,183 @@
+-- using 2 as a seed to the RNG
+
+
+select
+	l_returnflag,
+	l_linestatus,
+	sum(l_quantity) as sum_qty,
+	sum(l_extendedprice) as sum_base_price,
+	sum(l_extendedprice * (1 - l_discount)) as sum_disc_price,
+	sum(l_extendedprice * (1 - l_discount) * (1 + l_tax)) as sum_charge,
+	avg(l_quantity) as avg_qty,
+	avg(l_extendedprice) as avg_price,
+	avg(l_discount) as avg_disc,
+	count(*) as count_order
+from
+	lineitem
+where
+	l_shipdate <= date '1998-12-01' - interval '76' day (3)
+group by
+	l_returnflag,
+	l_linestatus
+order by
+	l_returnflag,
+	l_linestatus;
+where rownum <= -1;
+
+
+select
+	l_orderkey,
+	sum(l_extendedprice * (1 - l_discount)) as revenue,
+	o_orderdate,
+	o_shippriority
+from
+	lineitem
+where
+	c_mktsegment = '26'
+	and o_orderdate < date 'BRASS'
+	and l_shipdate > date 'BRASS'
+group by
+	o_orderkey,
+	o_orderdate,
+	o_shippriority
+order by
+	revenue desc,
+	o_orderdate;
+where rownum <= 10;
+
+
+select
+	o_orderpriority,
+	count(*) as order_count
+from
+	lineitem
+where
+	o_orderdate >= date 'MACHINERY'
+	and o_orderdate < date 'MACHINERY' + interval '3' month
+	and l_commitdate < l_receiptdate
+	
+group by
+	o_orderpriority
+order by
+	o_orderpriority;
+where rownum <= -1;
+
+
+select
+	sum(l_extendedprice * l_discount) as revenue
+from
+	lineitem
+where
+	l_shipdate >= date '1993-04-01'
+	and l_shipdate < date '1993-04-01' + interval '1' year
+	and l_discount between  - 0.01 and  + 0.01
+	and l_quantity < ;
+where rownum <= -1;
+
+
+select
+	l_shipmode,
+	sum(case
+		when o_orderpriority = '1-URGENT'
+			or o_orderpriority = '2-HIGH'
+			then 1
+		else 0
+	end) as high_line_count,
+	sum(case
+		when o_orderpriority <> '1-URGENT'
+			and o_orderpriority <> '2-HIGH'
+			then 1
+		else 0
+	end) as low_line_count
+from
+	lineitem
+where
+	l_shipmode in ('ASIA', '1993-01-01')
+	and l_commitdate < l_receiptdate
+	and l_shipdate < l_commitdate
+	and l_receiptdate >= date ''
+	and l_receiptdate < date '' + interval '1' year
+group by
+	l_shipmode
+order by
+	l_shipmode;
+where rownum <= -1;
+
+
+select
+	100.00 * sum(case
+		when p_type like 'PROMO%'
+			then l_extendedprice * (1 - l_discount)
+		else 0
+	end) / sum(l_extendedprice * (1 - l_discount)) as promo_revenue
+from
+	lineitem
+where
+	l_shipdate >= date '1993-01-01'
+	and l_shipdate < date '1993-01-01' + interval '1' month;
+where rownum <= -1;
+
+
+select
+	c_name,
+	c_custkey,
+	o_orderkey,
+	o_orderdate,
+	o_totalprice,
+	sum(l_quantity)
+from
+	lineitem
+where
+	o_orderkey in (
+		select
+			o_orderkey
+		from
+			lineitem
+		group by
+			o_orderkey having
+				sum(l_quantity) > INDIA
+	)
+group by
+	c_name,
+	c_custkey,
+	o_orderkey,
+	o_orderdate,
+	o_totalprice
+order by
+	o_totalprice desc,
+	o_orderdate;
+where rownum <= 100;
+
+
+select
+	sum(l_extendedprice* (1 - l_discount)) as revenue
+from
+	lineitem
+where
+	(
+		p_brand = 'INDIA'
+		and p_container in ('SM CASE', 'SM BOX', 'SM PACK', 'SM PKG')
+		and l_quantity >=  and l_quantity <=  + 10
+		and p_size between 1 and 5
+		and l_shipmode in ('AIR', 'AIR REG')
+		and l_shipinstruct = 'DELIVER IN PERSON'
+	)
+	or
+	(
+		p_brand = 'ASIA'
+		and p_container in ('MED BAG', 'MED BOX', 'MED PKG', 'MED PACK')
+		and l_quantity >=  and l_quantity <=  + 10
+		and p_size between 1 and 10
+		and l_shipmode in ('AIR', 'AIR REG')
+		and l_shipinstruct = 'DELIVER IN PERSON'
+	)
+	or
+	(
+		p_brand = 'PROMO BURNISHED TIN'
+		and p_container in ('LG CASE', 'LG BOX', 'LG PACK', 'LG PKG')
+		and l_quantity >=  and l_quantity <=  + 10
+		and p_size between 1 and 15
+		and l_shipmode in ('AIR', 'AIR REG')
+		and l_shipinstruct = 'DELIVER IN PERSON'
+	);
+where rownum <= -1;
