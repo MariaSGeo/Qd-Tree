@@ -115,12 +115,8 @@ if __name__ == "__main__":
     ppo_config.update(config)
     # use fixed learning rate instead of grid search (needs tune)
     ppo_config["lr"] = 1e-3
-    # ppo_config["train_batch_size"] = 20
-    # ppo_config["batch_mode"] = "complete_episodes"
-    # ppo_config["sgd_minibatch_size"] = 5
-    # ppo_config["callbacks"] = {"on_episode_end": tune.function(print_tree)}
 
-    # ppo_config["callbacks"] = WoodblockCallbacks
+    # ppo_config["callbacks"] = {"on_episode_end": tune.function(print_tree)}
 
     if args.no_tune:
         # manual training with train loop using PPO and fixed learning rate
@@ -131,11 +127,7 @@ if __name__ == "__main__":
         ppo_config.update(config)
         # use fixed learning rate instead of grid search (needs tune)
         ppo_config["lr"] = 1e-3
-        # ppo_config["train_batch_size"] = 20
-        # ppo_config["batch_mode"] = "complete_episodes"
-        # ppo_config["sgd_minibatch_size"] = 5
         # ppo_config["callbacks"] = {"on_episode_end": tune.function(print_tree)}
-        # ppo_config["callbacks"] = WoodblockCallbacks
         trainer = ppo.PPOTrainer(config=ppo_config, env=WoodBlockEnvMultiAgent)
         # run manual training loop and print results after each iteration
         for _ in range(args.stop_iters):
@@ -155,43 +147,5 @@ if __name__ == "__main__":
         if args.as_test:
             print("Checking if learning goals were achieved")
             check_learning_achieved(results, args.stop_reward)
-
-    # run_experiments({
-    #     "neurocuts_{}".format(args.partition_mode): {
-    #         "run": "PPO",
-    #         "stop": {
-    #             "timesteps_total": 100000 if args.fast else 10000000,
-    #         },
-    #         "config": {
-    #             "log_level": "WARN",
-    #             "num_gpus": 0.2 if args.gpu else 0,
-    #             "num_workers": args.num_workers,
-    #             "sgd_minibatch_size": 100 if args.fast else 1000,
-    #             "sample_batch_size": 200 if args.fast else 5000,
-    #             "train_batch_size": 1000 if args.fast else 15000,
-    #             "batch_mode": "complete_episodes",
-    #             "observation_filter": "NoFilter",
-    #             "model": {
-    #                 "custom_model": "woodblock_action_masking_model",
-    #                 "fcnet_hiddens": [512, 512],
-    #                 "fcnet_activation": "relu",
-    #                 "vf_share_layers": True,
-    #             }
-    #             "vf_share_layers": False,
-    #             "entropy_coeff": 0.01,
-    #             "callbacks": {
-    #                 "on_episode_end": tune.function(on_episode_end),
-    #                 #                    "on_postprocess_traj": tune.function(postprocess_gae),
-    #             },
-    #             "env": WoodBlockEnvMultiAgent,  # or "corridor" if registered above
-    #             "env_config": {
-    #                 "actions": [1, 2, 3, 4, 5],
-    #                 "cuts": 5,
-    #                 "corridor_length": 5,
-    #                 "custom_config": AppConfig('../../../../config/qdTreeConfig.json'),
-    #             },
-    #         },
-    #     },
-    # })
 
     ray.shutdown()
